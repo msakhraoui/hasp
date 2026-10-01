@@ -9,7 +9,7 @@
 
 ---
 
-## 🔍Overview
+## Overview
 
 InDeception transforms passive honeypots into an intelligent defense platform. Instead of merely logging attacks, it:
 
