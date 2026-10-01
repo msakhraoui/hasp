@@ -19,7 +19,6 @@ InDeception transforms passive honeypots into an intelligent defense platform. I
 - Provides real-time visibility through a live SOC dashboard
 
 All detection, orchestration, and enforcement occur exclusively within the Ubuntu VM. The Fedora host serves only as an external LLM inference endpoint and attack simulation source.
-```
 
 ```mermaid
 graph LR
@@ -33,28 +32,38 @@ graph LR
     G --> H[Live Dashboard]
 ```
 
+## Current Progress
 
-Current Progress
-Implemented
-Cowrie SSH Honeypot: Fake terminal capturing commands, credentials (hashed), and file uploads
-Snort3 NIDS: JSON-formatted alerts for SYN/NULL/Xmas/FIN scans and SSH brute-force
-Go Cowrie Log Reader: Tail-f ingestion with JSON unmarshaling and event normalization
-Ed25519 Signing Infrastructure: Key generation, signing at reader level, verification CLI
-TimescaleDB Schema: Hypertables for signed events and firewall actions with expiration tracking
-Project Skeleton: Modular Go structure (cmd/, internal/), sanitized configs, documentation
-Planned / In Progress
-Snort JSON log reader
-Go orchestrator pipeline (event aggregation, LLM dispatch)
-Ollama integration (structured JSON output, prompt engineering)
-Policy engine (risk thresholds, allowlist, confidence validation)
-Firewall enforcer (ipset/nftables with TTL inside Ubuntu VM)
-Real-time WebSocket server + SOC dashboard
-End-to-end testing and demo scenario
-Security Principles
-Log Integrity: All events signed with Ed25519 at ingestion; tamper-evident audit trail
-Confidentiality: Local LLM only; no cloud exfiltration; credentials hashed before storage
-Deterministic Enforcement: LLM advises; Go policy engine enforces with minimum confidence + allowlist checks
-Isolation: Core security stack confined to Ubuntu VM; host LLM endpoint restricted to internal network
-License
+### Implemented
+- Cowrie SSH Honeypot: Fake terminal capturing commands, credentials (hashed), and file uploads
+- Snort3 NIDS: JSON-formatted alerts for SYN/NULL/Xmas/FIN scans and SSH brute-force
+- Go Cowrie Log Reader: Tail-f ingestion with JSON unmarshaling and event normalization
+- Ed25519 Signing Infrastructure: Key generation, signing at reader level, verification CLI
+- TimescaleDB Schema: Hypertables for signed events and firewall actions with expiration tracking
+- Project Skeleton: Modular Go structure (cmd/, internal/), sanitized configs, documentation
+
+### Planned / In Progress
+- [ ] Snort JSON log reader
+- [ ] Go orchestrator pipeline (event aggregation, LLM dispatch)
+- [ ] Ollama integration (structured JSON output, prompt engineering)
+- [ ] Policy engine (risk thresholds, allowlist, confidence validation)
+- [ ] Firewall enforcer (ipset/nftables with TTL inside Ubuntu VM)
+- [ ] Real-time WebSocket server + SOC dashboard
+- [ ] End-to-end testing and demo scenario
+
+## Security Principles
+
+- Log Integrity: All events signed with Ed25519 at ingestion; tamper-evident audit trail
+- Confidentiality: Local LLM only; no cloud exfiltration; credentials hashed before storage
+- Deterministic Enforcement: LLM advises; Go policy engine enforces with minimum confidence + allowlist checks
+- Isolation: Core security stack confined to Ubuntu VM; host LLM endpoint restricted to internal network
+
+---
+
+## License
+
 MIT License — see LICENSE for details.
+
+---
+
 Built for PFE — IRS3 program, ISIMA | 2025–2026
