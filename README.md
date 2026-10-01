@@ -1,4 +1,4 @@
-# InDeception
+# 🛡️InDeception
 ### AI-Assisted Deception & Autonomous Defense System
 
 > An autonomous cybersecurity infrastructure that lures attackers into a controlled environment, analyzes their behavior using a local LLM, and autonomously enforces defensive actions based on validated risk scoring.
@@ -8,7 +8,7 @@
 
 ---
 
-## Overview
+## 🔍Overview
 
 InDeception transforms passive honeypots into an intelligent defense platform. Instead of merely logging attacks, it:
 
@@ -42,7 +42,7 @@ graph LR
 - TimescaleDB Schema: Hypertables for signed events and firewall actions with expiration tracking
 - Project Skeleton: Modular Go structure (cmd/, internal/), sanitized configs, documentation
 
-### Planned / In Progress
+### ⏳Planned / In Progress
 - [ ] Snort JSON log reader
 - [ ] Go orchestrator pipeline (event aggregation, LLM dispatch)
 - [ ] Ollama integration (structured JSON output, prompt engineering)
