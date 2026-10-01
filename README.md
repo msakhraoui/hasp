@@ -1,4 +1,4 @@
-# 🛡️InDeception
+# InDeception
 ### AI-Assisted Deception & Autonomous Defense System
 
 > An autonomous cybersecurity infrastructure that lures attackers into a controlled environment, analyzes their behavior using a local LLM, and autonomously enforces defensive actions based on validated risk scoring.
@@ -33,7 +33,7 @@ graph LR
     G --> H[Live Dashboard]
 ```
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 | :--- | :--- |
@@ -47,7 +47,7 @@ graph LR
 | **Signing** | Ed25519 (Go stdlib `crypto/ed25519`) |
 | **Version Control** | Git + GitHub |
 
-## ✅Current Progress
+## Current Progress
 
 ### Implemented
 - Cowrie SSH Honeypot: Fake terminal capturing commands, credentials (hashed), and file uploads
@@ -56,7 +56,7 @@ graph LR
 - automated bash script that opens multiple tmux windows wish contains ssh conections, real time log viewing..
 - Project Skeleton: Modular Go structure (cmd/, internal/), sanitized configs, documentation
 
-### ⏳Planned / In Progress
+### Planned / In Progress
 - [ ] Ed25519 Signing Infrastructure: Key generation, signing at reader level, verification CLI
 - [ ] Go orchestrator pipeline (event aggregation, LLM dispatch)
 - [ ] Ollama integration (structured JSON output, prompt engineering)
@@ -66,7 +66,7 @@ graph LR
 - [ ] Real-time WebSocket server + SOC dashboard
 - [ ] End-to-end testing and demo scenario
 
-## 🔒Security Principles
+## Security Principles
 
 - Log Integrity: All events signed with Ed25519 at ingestion; tamper-evident audit trail
 - Confidentiality: Local LLM only; no cloud exfiltration; credentials hashed before storage
@@ -75,17 +75,17 @@ graph LR
 
 ---
 
-## 📄License
+## License
 
 MIT License — see LICENSE for details.
 
 ---
-## 🤝 Contributing & Feedback
+## Contributing & Feedback
 
 This project is actively evolving as part of an academic PFE. I welcome:
 
-- 💡 **Ideas**: Better detection logic, LLM prompt improvements, dashboard features
--   **Code contributions**: Bug fixes, performance optimizations, new integrations
+-  **Ideas**: Better detection logic, LLM prompt improvements, dashboard features
+-  **Code contributions**: Bug fixes, performance optimizations, new integrations
 -  **Documentation**: Clarifications, architecture diagrams, setup guides
 - ️ **Security reviews**: Threat model feedback, bypass scenarios, hardening suggestions
 
