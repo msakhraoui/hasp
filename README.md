@@ -4,7 +4,8 @@
 > An autonomous cybersecurity infrastructure that lures attackers into a controlled environment, analyzes their behavior using a local LLM, and autonomously enforces defensive actions based on validated risk scoring.
 
 **PFE Project — IRS3 | ISIMA | 2026–2027**  
-**Status: Active Development**
+
+**⚠️ Status: Active Development**
 
 ---
 
