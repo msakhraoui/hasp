@@ -32,7 +32,7 @@ graph LR
     G --> H[Live Dashboard]
 ```
 
-## Current Progress
+## ✅Current Progress
 
 ### Implemented
 - Cowrie SSH Honeypot: Fake terminal capturing commands, credentials (hashed), and file uploads
@@ -51,7 +51,7 @@ graph LR
 - [ ] Real-time WebSocket server + SOC dashboard
 - [ ] End-to-end testing and demo scenario
 
-## Security Principles
+## 🔒Security Principles
 
 - Log Integrity: All events signed with Ed25519 at ingestion; tamper-evident audit trail
 - Confidentiality: Local LLM only; no cloud exfiltration; credentials hashed before storage
@@ -60,7 +60,7 @@ graph LR
 
 ---
 
-## License
+## 📄License
 
 MIT License — see LICENSE for details.
 
