@@ -87,10 +87,10 @@ graph LR
 
 ## Security principles
 
- **Log integrity:** events will be signed with Ed25519 at ingestion for a tamper-evident audit trail
- **Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
- **Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
- **Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
+ -**Log integrity:** events will be signed with Ed25519 at ingestion for a tamper-evident audit trail
+ -**Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
+ -**Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
+ -**Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
 
 ## License
 
