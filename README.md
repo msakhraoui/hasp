@@ -31,11 +31,11 @@ Can a language model running locally score SSH attacker behavior well enough to 
 ## Target architecture
 
 InDeception turns a passive honeypot into an adaptive defense pipeline. When complete it will:
- Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26 VM, with Snort 3 for network scan detection
- Sign all telemetry cryptographically at ingestion
- Send normalized events to a local LLM for behavioral analysis and risk scoring
- Enforce time-limited firewall blocks through a deterministic Go policy engine
- Offer optional real-time visibility through a SOC dashboard
+ - Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26 VM, with Snort 3 for network scan detection
+ - Sign all telemetry cryptographically at ingestion
+ - Send normalized events to a local LLM for behavioral analysis and risk scoring
+ - Enforce time-limited firewall blocks through a deterministic Go policy engine
+ - Offer optional real-time visibility through a SOC dashboard
 
 All detection, orchestration and enforcement run inside the Ubuntu VM. The Fedora host serves only as the LLM inference endpoint and attack simulation source.
 
@@ -87,10 +87,10 @@ graph LR
 
 ## Security principles
 
- -**Log integrity:** events will be signed with Ed25519 at ingestion for a tamper-evident audit trail
- -**Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
- -**Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
- -**Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
+ - **Log integrity:** events will be signed with Ed25519 at ingestion for a tamper-evident audit trail
+ - **Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
+ - **Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
+ - **Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
 
 ## License
 
