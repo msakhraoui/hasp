@@ -24,9 +24,9 @@ Can a language model running locally score SSH attacker behavior well enough to 
 
 ## Threat model
 
- **Attacker:** remote attacker with no valid credentials on the real system, who may log into the honeypot
- **Defended asset:** the real SSH service (port 2222) on the Ubuntu VM, with the honeypot on port 22
- **Out of scope:** kernel exploits, VM escape, encrypted C2 analysis
+ - **Attacker:** remote attacker with no valid credentials on the real system, who may log into the honeypot
+ - **Defended asset:** the real SSH service (port 2222) on the Ubuntu VM, with the honeypot on port 22
+ - **Out of scope:** kernel exploits, VM escape, encrypted C2 analysis
 
 ## Target architecture
 
