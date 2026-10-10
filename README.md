@@ -2,13 +2,13 @@
 
 ### LLM-assisted SSH deception with a deterministic Go policy engine. Research prototype.
 
-An autonomous cybersecurity infrastructure that lures attackers into a controlled environment, analyzes their behavior using a local LLM, and enforces defensive actions through a deterministic policy engine. Risk scoring evaluation is planned.
+A live deception platform that doubles as a controlled testbed for evaluating LLM-driven threat classification under real attack conditions. 
 
 **Status:** Active development (prototype)
 
 ## Research question
 
-Can a language model running locally score SSH attacker behavior well enough to trigger automatic, time-limited blocks, and how often does it wrongly block a legitimate session?
+Can a language model running locally score SSH attacker behavior well enough to trigger automatic, time-limited blocks, and how often does it wrongly classify a simulated benign session?
  - Does the model's risk score separate attackers from normal sessions better than a simple rule-based score?
  - How often does it block a normal session, and how often does it let a real attacker through?
  - How long does it take from the attacker’s first action to the block, and is that fast enough to matter?
@@ -16,22 +16,22 @@ Can a language model running locally score SSH attacker behavior well enough to 
 
 ## Evaluation plan (planned)
 
-- **Attack sessions:** scans, SSH brute force, scripted post-login commands
+- **Attack sessions:** scans, SSH brute force, scripted post-login commands, generated from Fedora host (kali VM) using nmap, hydra, and custom scripts simulating bot behavior and manual attacker behavior
 - **Normal sessions:** scripted admin work like ls, apt update, editing files, created by me since a honeypot has no real users
 - **Metrics:** precision, false-block rate, miss rate, time-to-block
 - **Baseline:** simple rule-based score, counting failed logins and suspicious commands
-- **Models compared:** 2-3 Ollama models of different sizes
+- **Models compared:** Mistral 7B, Llama 3.1 8B, and optionally Phi-3 Mini to evaluate performance vs model size tradeoff
 
 ## Threat model
 
  - **Attacker:** remote attacker with no valid credentials on the real system, who may log into the honeypot
- - **Defended asset:** the real SSH service (port 2222) on the Ubuntu VM, with the honeypot on port 22
+ - **Defended asset:** the real SSH service (port 555) on the Ubuntu VM, with the honeypot on port 22 (redirected to Cowrie on 2222)
  - **Out of scope:** kernel exploits, VM escape, encrypted C2 analysis
 
 ## Target architecture
 
 InDeception turns a passive honeypot into an adaptive defense pipeline. When complete it will:
- - Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26 VM, with Snort 3 for network scan detection
+ - Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26.04 VM, with Snort 3 for network scan detection
  - Sign all telemetry cryptographically at ingestion
  - Send normalized events to a local LLM for behavioral analysis and risk scoring
  - Enforce time-limited firewall blocks through a deterministic Go policy engine
