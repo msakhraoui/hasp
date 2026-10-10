@@ -1,25 +1,25 @@
 # InDeception
 
-### LLM-assisted SSH deception with a deterministic Go policy engine. Research prototype.
+### LLM assisted SSH deception with a deterministic Go policy engine. Research prototype.
 
-A live deception platform that doubles as a controlled testbed for evaluating LLM-driven threat classification under real attack conditions. 
+A live deception platform for evaluating LLM driven threat classification using live attack data. 
 
 **Status:** Active development (prototype)
 
-## Research question
+## Research questions
 
-Can a language model running locally score SSH attacker behavior well enough to trigger automatic, time-limited blocks, and how often does it wrongly classify a simulated benign session?
- - Does the model's risk score separate attackers from normal sessions better than a simple rule-based score?
- - How often does it block a normal session, and how often does it let a real attacker through?
+Can a language model running locally score SSH attacker behavior well enough to trigger automatic, time limited blocks, and how often does it wrongly classify a simulated benign session?
+ - Does the model's risk score separate attackers from simulated benign sessions better than a simple rule based score?
+ - How often does it wrongly classify a simulated benign session as malicious, and how often does it miss a real attack?
  - How long does it take from the attacker’s first action to the block, and is that fast enough to matter?
  - Does a small model on ordinary hardware perform nearly as well as a bigger one?
 
 ## Evaluation plan (planned)
 
-- **Attack sessions:** scans, SSH brute force, scripted post-login commands, generated from Fedora host (kali VM) using nmap, hydra, and custom scripts simulating bot behavior and manual attacker behavior
-- **Normal sessions:** scripted admin work like ls, apt update, editing files, created by me since a honeypot has no real users
-- **Metrics:** precision, false-block rate, miss rate, time-to-block
-- **Baseline:** simple rule-based score, counting failed logins and suspicious commands
+- **Attack sessions:** scans, SSH brute force, scripted post login commands, generated from Fedora host (kali VM) using nmap, hydra, and custom scripts simulating bot behavior and manual attacker behavior
+- **Simulated benign sessions:** scripted admin work like ls, apt update, editing files, created by me since a honeypot has no real users
+- **Metrics:** precision, false block rate, miss rate, time to block
+- **Baseline:** simple rule based score, counting failed logins and suspicious commands
 - **Models compared:** Mistral 7B, Llama 3.1 8B, and optionally Phi-3 Mini to evaluate performance vs model size tradeoff
 
 ## Threat model
@@ -34,8 +34,8 @@ InDeception turns a passive honeypot into an adaptive defense pipeline. When com
  - Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26.04 VM, with Snort 3 for network scan detection
  - Sign all telemetry cryptographically at ingestion
  - Send normalized events to a local LLM for behavioral analysis and risk scoring
- - Enforce time-limited firewall blocks through a deterministic Go policy engine
- - Offer optional real-time visibility through a SOC dashboard
+ - Enforce time limited firewall blocks through a deterministic Go policy engine
+ - Offer optional real time visibility through a SOC dashboard
 
 All detection, orchestration and enforcement run inside the Ubuntu VM. The Fedora host serves only as the LLM inference endpoint and attack simulation source.
 
@@ -69,17 +69,17 @@ graph LR
 ### Implemented
  - Cowrie SSH honeypot: fake terminal capturing commands, credentials (hashed) and file uploads
  - Snort 3 NIDS: JSON alerts for SYN/NULL/Xmas/FIN scans and SSH brute force
- - Go log readers (`goLogreaders/`): tail-f ingestion of Cowrie and Snort logs, JSON unmarshaling, event normalization
+ - Go log readers (`goLogreaders/`): tail -f ingestion of Cowrie and Snort logs, JSON unmarshaling, event normalization
 
 ### Planned
  - Ed25519 signing: key generation, signing at reader level, verification CLI
  - Go orchestrator pipeline: event aggregation, LLM dispatch
- - Ollama integration: structured JSON output, prompt engineering
+ - Ollama integration: structured JSON output, LLM output formatting.
  - Policy engine: risk thresholds, allowlist, confidence validation
  - Firewall enforcer: ipset/nftables with TTL inside the VM
  - Evaluation: scenarios, metrics, model comparison
  - TimescaleDB schema: hypertables for signed events and firewall actions
- - End-to-end demo scenario
+ - End to end demo scenario
  - Optional: WebSocket server + SOC dashboard
 
 ## Demo
@@ -87,7 +87,7 @@ graph LR
 
 ## Security principles
 
- - **Log integrity:** events will be signed with Ed25519 at ingestion for a tamper-evident audit trail
+ - **Log integrity:** events will be signed with Ed25519 at ingestion for a tamper evident audit trail
  - **Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
  - **Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
  - **Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
@@ -98,4 +98,4 @@ GPL-3.0, see [LICENSE](LICENSE).
 
 ## Contact
 
-Malek SK, malekskwork@gmail.com. Feedback and threat-model reviews are welcome via GitHub Discussions.
+Malek SK, malekskwork@gmail.com. Feedback and threat model reviews are welcome via GitHub Discussions.
