@@ -1,101 +1,181 @@
 # InDeception
 
-### LLM assisted SSH deception with a deterministic Go policy engine. Research prototype.
+### LLM-assisted SSH deception with a deterministic Go policy engine. Research prototype.
 
-A live deception platform for evaluating LLM driven threat classification using live attack data. 
+A honeypot that doesn't just record attacks — it scores attacker sessions with a local LLM and blocks the source at the firewall. The LLM advises; deterministic Go code decides.
 
-**Status:** Active development (prototype)
+**Status:** Active development. Not production software. Run only in an isolated lab you own.
+
+---
+
+## Why
+
+Classic tools like fail2ban block on simple counters (N failed logins) — trivially evaded by slow, distributed, or novel behavior. InDeception tests whether a small local LLM can score full session behavior well enough to drive automated blocking, under three hard constraints:
+
+- **No cloud** — all inference local, no telemetry leaves the host
+- **Deterministic enforcement** — the LLM never touches the firewall directly
+- **Auditable** — every event is signed (Ed25519) at ingestion; every block is logged with the score and threshold that caused it
+
+The honeypot (Cowrie, port 22) is the sensor. The defended asset is the real SSH service on a nonstandard port on the same host — a source-IP block protects both.
+
+---
+
+## Architecture
+
+```
+attacker
+   │
+   ▼
+ :22 ── iptables redirect ──▶ Cowrie :2222 ──┐      (Ubuntu VM)
+                                             │
+ Snort 3 (NIDS alerts) ──────────────────────┤
+                                             ▼
+                      Go log readers — tail, normalize, Ed25519 sign
+                                             │
+                                             ▼
+                      Orchestrator — aggregates events into sessions
+                            │                        │
+                            ▼                        ▼
+                Ollama (local LLM)           Go policy engine
+                JSON risk score              threshold · allowlist · min confidence
+                            │                        │
+                            └──────────┬─────────────┘
+                                       ▼
+                        nftables / ipset — time-limited (TTL) block
+                                       │
+                                       ▼
+             TimescaleDB (signed events + actions) · SOC dashboard (optional)
+
+Fedora host: attack simulation + LLM inference endpoint (internal network only)
+```
+
+---
 
 ## Research questions
 
-Can a language model running locally score SSH attacker behavior well enough to trigger automatic, time limited blocks, and how often does it wrongly classify a simulated benign session?
- - Does the model's risk score separate attackers from simulated benign sessions better than a simple rule based score?
- - How often does it wrongly classify a simulated benign session as malicious, and how often does it miss a real attack?
- - How long does it take from the attacker’s first action to the block, and is that fast enough to matter?
- - Does a small model on ordinary hardware perform nearly as well as a bigger one?
+1. Can a small local LLM score SSH session risk well enough to trigger automatic blocks — and at what false-block rate on simulated benign sessions?
+2. Does the LLM's score separate attackers from simulated benign sessions better than a rule-based score and a supervised classical baseline?
+3. Can an attacker who controls honeypot session content manipulate the LLM's risk score — and does the deterministic policy layer hold?
+4. How long from an attacker's first action to a block, and is that fast enough to matter under the threat model?
+5. How do accuracy and latency scale with model size (~1B / 3B / 8B) on ordinary hardware?
 
-## Evaluation plan (planned)
-
-- **Attack sessions:** scans, SSH brute force, scripted post login commands, generated from Fedora host (kali VM) using nmap, hydra, and custom scripts simulating bot behavior and manual attacker behavior
-- **Simulated benign sessions:** scripted admin work like ls, apt update, editing files, created by me since a honeypot has no real users
-- **Metrics:** precision, false block rate, miss rate, time to block
-- **Baseline:** simple rule based score, counting failed logins and suspicious commands
-- **Models compared:** Mistral 7B, Llama 3.1 8B, and optionally Phi-3 Mini to evaluate performance vs model size tradeoff
+---
 
 ## Threat model
 
- - **Attacker:** remote attacker with no valid credentials on the real system, who may log into the honeypot
- - **Defended asset:** the real SSH service (port 555) on the Ubuntu VM, with the honeypot on port 22 (redirected to Cowrie on 2222)
- - **Out of scope:** kernel exploits, VM escape, encrypted C2 analysis
+- **Attacker:** remote, no valid credentials, targets SSH services. Adaptive — assumed to know a deception platform may exist, and able to shape session content (including prompt injection against the LLM) to avoid or manipulate scoring.
+- **Defended asset:** the real SSH service (nonstandard port). The honeypot is expendable.
+- **Trusted:** the VM host, the policy engine binary, the signing keys.
+- **Out of scope:** kernel exploits, VM escape, encrypted C2 analysis.
 
-## Target architecture
+The prompt-injection surface is deliberate: if an attacker can manipulate the score, the policy engine's minimum-confidence check is the last line. Testing that is part of the evaluation.
 
-InDeception turns a passive honeypot into an adaptive defense pipeline. When complete it will:
- - Deploy a deceptive SSH service (Cowrie) inside an isolated Ubuntu Server 26.04 VM, with Snort 3 for network scan detection
- - Sign all telemetry cryptographically at ingestion
- - Send normalized events to a local LLM for behavioral analysis and risk scoring
- - Enforce time limited firewall blocks through a deterministic Go policy engine
- - Offer optional real time visibility through a SOC dashboard
+---
 
-All detection, orchestration and enforcement run inside the Ubuntu VM. The Fedora host serves only as the LLM inference endpoint and attack simulation source.
+## Evaluation plan (planned)
 
-```mermaid
-graph LR
-    A[Attacker] --> B[Honeypot / NIDS]
-    B --> C[Go Reader + Ed25519 Sign]
-    C --> D[Local LLM Analysis]
-    D --> E[Policy Engine]
-    E -->|Score >= Threshold| F[VM Firewall Block]
-    E -->|Log Only| G[(TimescaleDB)]
-    F --> G
-    G --> H[Live Dashboard]
-```
+- **Attack sessions:** port scans, SSH brute force, scripted post-auth command sequences, manual operator sessions — generated from a Kali VM on the internal network using nmap, hydra, and custom scripts.
+- **Simulated benign sessions:** scripted admin work (file edits, package updates, log inspection), authored blind — written without reference to the attack scripts — with randomized timing and command ordering. A honeypot has no real users; this is a stated limitation.
+- **Prompt injection sessions:** attacker-authored session content crafted to manipulate the LLM score. Measures score drift and policy engine resilience.
+- **Splits:** calibration set for threshold selection; held-out set for all reported metrics.
+- **Models:** three sizes via Ollama, pinned tags and quantization (e.g. `llama3.1:8b-instruct-q4_K_M`), temperature 0, JSON-schema structured output. Prompt template versioned in the repo.
+- **Metrics:** per-session block precision/recall, false-block rate, miss rate, time-to-block (median, P95), LLM latency. Class balance stated explicitly.
+- **Baselines:** (1) simple rule-based score, (2) fail2ban-equivalent counter policy, (3) supervised classical ML on session features.
+
+### Results (placeholder)
+
+| Model | Block precision | False-block rate | Miss rate | Time-to-block P95 |
+|---|---|---|---|---|
+| — | — | — | — | — |
+
+---
 
 ## Tech stack
 
 | Layer | Technology |
 | :--- | :--- |
 | **Core language** | Go 1.22+ |
-| **Honeypot** | Cowrie (Python-based, configured via shell) |
+| **Honeypot** | Cowrie (Python-based) |
 | **NIDS** | Snort 3 (Lua rules + JSON output) |
 | **AI analysis** | Ollama (local LLM inference) |
 | **Database** | TimescaleDB (PostgreSQL extension) |
 | **Dashboard** | HTML/CSS/JavaScript + WebSocket (optional) |
-| **Infrastructure** | Ubuntu Server VM, iptables/nftables, ipset |
+| **Infrastructure** | Ubuntu Server 24.04 VM, iptables/nftables, ipset |
 | **Signing** | Ed25519 (Go stdlib `crypto/ed25519`) |
 
-## Current progress
+---
+
+## Current status
 
 ### Implemented
- - Cowrie SSH honeypot: fake terminal capturing commands, credentials (hashed) and file uploads
- - Snort 3 NIDS: JSON alerts for SYN/NULL/Xmas/FIN scans and SSH brute force
- - Go log readers (`goLogreaders/`): tail -f ingestion of Cowrie and Snort logs, JSON unmarshaling, event normalization
+- Cowrie SSH honeypot: fake terminal capturing commands, credential attempts (hashed), file uploads
+- Snort 3 NIDS: JSON alerts for SYN/NULL/Xmas/FIN scans and SSH brute force
+- Go log readers (`cmd/reader/`): tail-based ingestion, JSON unmarshaling, event normalization
+
+### In progress
+- Ed25519 signing at reader level + verification CLI
+- Orchestrator: session aggregation, LLM dispatch (structured JSON output)
+- Policy engine: thresholds, allowlist, confidence validation
+- Firewall enforcer: nftables/ipset with TTL
 
 ### Planned
- - Ed25519 signing: key generation, signing at reader level, verification CLI
- - Go orchestrator pipeline: event aggregation, LLM dispatch
- - Ollama integration: structured JSON output, LLM output formatting.
- - Policy engine: risk thresholds, allowlist, confidence validation
- - Firewall enforcer: ipset/nftables with TTL inside the VM
- - Evaluation: scenarios, metrics, model comparison
- - TimescaleDB schema: hypertables for signed events and firewall actions
- - End to end demo scenario
- - Optional: WebSocket server + SOC dashboard
+- Evaluation harness: attack + benign scenarios, metrics runner, model comparison
+- TimescaleDB hypertables for signed events and actions
+- Optional WebSocket SOC dashboard
+- End-to-end demo scenario
 
-## Demo
+---
 
+## Repository layout
 
-## Security principles
+```
+cmd/
+  reader/          log tailer — cowrie/snort, normalize, Ed25519 sign, forward
+  orchestrator/    session aggregation, LLM dispatch
+  policy/          deterministic policy engine
+  verifier/        signature verification CLI
+internal/
+  event/           normalized event types
+  sign/            Ed25519 helpers
+  llm/             Ollama client, JSON schema, prompt templates
+  firewall/        nftables/ipset drivers
+eval/              attack + benign scenarios, metrics runner
+configs/           thresholds, model pins, deployment settings
+deploy/            nftables rules, Cowrie/Snort configs
+```
 
- - **Log integrity:** events will be signed with Ed25519 at ingestion for a tamper evident audit trail
- - **Confidentiality:** local LLM only, no cloud exfiltration, credentials hashed before storage
- - **Deterministic enforcement:** the LLM advises, the Go policy engine enforces using a minimum confidence and allowlist checks
- - **Isolation:** the security stack is confined to the Ubuntu VM, and the host LLM endpoint is restricted to the internal network
+---
+
+## Security design
+
+- **Integrity:** Ed25519 signature per event at ingestion. Tamper-evident, not tamper-proof — the signer lives on the same host.
+- **Confidentiality:** local inference only; no telemetry leaves the host; credentials hashed before storage.
+- **Determinism:** LLM output is advisory. Blocks require threshold + minimum confidence + allowlist pass. Every action is logged with its full inputs.
+- **Containment:** security stack confined to the Ubuntu VM; LLM endpoint restricted to the internal network.
+- **Collateral:** IP blocks affect everyone behind a shared address (NAT). Allowlist and short TTLs limit the impact.
+
+---
+
+## Limitations
+
+- Simulated benign traffic is self-authored; results won't transfer to real user distributions.
+- Single host, single attacker source; no distributed or slow-burn attacks yet.
+- LLM latency dominates time-to-block on the slow path.
+- Quantized models; absolute numbers are specific to the pinned versions.
+- Signing is tamper-evident only — the signer and the signed data live on the same host.
+
+---
+
+## Ethics & scope
+
+Isolated lab environment only. Do not deploy on networks you do not own or operate. Blocking real source IPs has real consequences for the people behind them. This is a research prototype, not a production security tool.
+
+---
 
 ## License
 
-GPL-3.0, see [LICENSE](LICENSE).
+GPL-3.0 — see [LICENSE](LICENSE).
 
 ## Contact
 
-Malek SK, malekskwork@gmail.com. Feedback and threat model reviews are welcome via GitHub Discussions.
+Malek SK · malekskwork@gmail.com · feedback and threat-model reviews welcome via GitHub Discussions.
