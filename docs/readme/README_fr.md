@@ -15,7 +15,7 @@
 [![NIDS](https://img.shields.io/badge/NIDS-Snort_3-1997f7?style=flat-square)](https://www.snort.org/)
 [![Local LLM](https://img.shields.io/badge/local_LLM-Ollama-22c55e?style=flat-square)](https://ollama.com/)
 
-**[Démarrage rapide](#demarrage-rapide) · [Comment ça marche](#comment-ca-marche) · [Ce que vous pouvez détecter](#ce-que-vous-pouvez-detecter) · [Questions de recherche](#questions-de-recherche) · [FAQ](#faq) · [Documentation](#documentation)**
+[Démarrage rapide](#Démarrage-rapide) · [Comment ça marche](#Comment-ça-marche) · [Ce que vous pouvez détecter](#ce-que-vous-pouvez-detecter) · [Questions de recherche](#questions-de-recherche) · [FAQ](#faq) · [Documentation](#documentation)
 
 <code>git clone https://github.com/msakhraoui/hasp && cd hasp</code>
 
@@ -67,51 +67,6 @@
 
 ### Installation
 
-Clonez le dépôt :
-
-```bash
-git clone https://github.com/msakhraoui/hasp
-cd hasp
-make build
-```
-
-Tirez un modèle local avec Ollama. Le tag épinglé est important, les résultats changent selon la quantification :
-
-```bash
-ollama pull llama3.1:8b-instruct-q4_K_M
-```
-
-Copiez la configuration d'exemple et éditez le seuil et l'allowlist :
-
-```bash
-cp configs/policy.example.yaml configs/policy.yaml
-$EDITOR configs/policy.yaml
-```
-
-Lancez le pipeline :
-
-```bash
-make run
-```
-
-### Lancer une évaluation
-
-```bash
-make eval
-```
-
-Le runner produit `metrics.json` et met à jour le tableau de résultats ci-dessous. Voir [Plan d'évaluation](#plan-devaluation).
-
-### Mise à jour
-
-HASP évolue rapidement pendant que la portée de recherche se stabilise. Gardez votre clone à jour :
-
-```bash
-git pull
-make build
-```
-
-Si vous avez changé les modèles épinglés ou les seuils, relancez `make eval` pour rafraîchir le tableau de résultats.
 
 ## Comment ça marche
 
@@ -148,22 +103,7 @@ Hôte Fedora : simulation d'attaque + endpoint d'inférence LLM (réseau interne
 
 ## Ce que vous pouvez détecter
 
-Chaque session est scorée par le LLM local. Le moteur de politique Go prend la décision finale de blocage ou d'autorisation. La colonne Capteur indique uniquement quel capteur brut a capturé chaque comportement avant son entrée dans le pipeline.
-
-| Comportement | Ce que HASP retourne | Capteur |
-| --- | --- | --- |
-| Force brute SSH | Score de risque, IP source, nombre de tentatives, décision de blocage | Cowrie |
-| Scans de ports (SYN, NULL, Xmas, FIN) | Type de scan, IP source, décision de blocage | Snort 3 |
-| Credential stuffing | Score de risque, IP source, motif inter-sessions | Cowrie + orchestrateur |
-| Abus de commandes post-auth | Score de risque, confiance, commandes identifiées, décision de blocage | Cowrie |
-| Tentatives de reverse shell | Score de risque, confiance, motif suspect, décision de blocage | Cowrie |
-| Téléchargement et staging de fichiers | Hashs des fichiers téléchargés, URL source, score de risque | Cowrie + stockage de téléchargements |
-| Élévation de privilèges | Score de risque, confiance, motif d'escalade, décision de blocage | Cowrie |
-| Exfiltration de données | Score de risque, confiance, chemins ciblés, décision de blocage | Cowrie |
-| Injection de prompt en session | Dérive de score, contenu injecté, résistance de la couche politique | LLM + moteur de politique |
-| Force brute lente ou distribuée | Score de risque agrégé sur le temps et les IP sources | Cowrie + orchestrateur |
-| Sessions d'opérateur manuel | Score de risque, confiance, trace de commandes, décision de blocage | Cowrie |
-| Travail admin bénin (calibration) | Score de risque, confiance, vérification de faux blocage | Cowrie |
+Force brute SSH | Scans de ports (SYN, NULL, Xmas, FIN) | Credential stuffing | Abus de commandes post-auth | Tentatives de reverse shell | Téléchargement et staging de fichiers | Élévation de privilèges | Exfiltration de données | Injection de prompt en session | Force brute lente ou distribuée | Sessions d'opérateur manuel | Travail admin bénin (calibration) |
 
 ## Questions de recherche
 
@@ -196,7 +136,7 @@ La surface d'injection de prompt est délibérée. Si un attaquant peut manipule
 
 | Modèle | Précision de blocage | Taux de faux blocage | Taux de miss | Temps de blocage P95 |
 | --- | --- | --- | --- | --- |
-| (à remplir) | | | | |
+| | | | | |
 
 ## Pile technique
 
@@ -236,19 +176,7 @@ La surface d'injection de prompt est délibérée. Si un attaquant peut manipule
 ## Structure du dépôt
 
 ```
-cmd/
-  reader/          tailer de logs, cowrie et snort, normalisation, signature Ed25519, forward
-  orchestrator/    agrégation de sessions, dispatch LLM
-  policy/          moteur de politique déterministe
-  verifier/        CLI de vérification de signature
-internal/
-  event/           types d'événements normalisés
-  sign/            helpers Ed25519
-  llm/             client Ollama, schéma JSON, templates de prompt
-  firewall/        drivers nftables et ipset
-eval/              scénarios d'attaque et bénins, runner de métriques
-configs/           seuils, modèles épinglés, paramètres de déploiement
-deploy/            règles nftables, configs Cowrie et Snort
+-
 ```
 
 ## Conception de sécurité
