@@ -1,5 +1,7 @@
 <div align="center">
 
+[English](../../README.md) · **Français**
+
 # HASP : Honeypot Adaptive Scoring Policy
 
 ### Déception SSH assistée par LLM avec un moteur de politique déterministe en Go. Prototype de recherche.
