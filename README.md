@@ -1,6 +1,6 @@
 <div align="center">
 
-# InDeception
+# HASP: Honeypot Adaptive Scoring Policy
 
 ### LLM-assisted SSH deception with a deterministic Go policy engine. Research prototype.
 
@@ -15,7 +15,7 @@
 
 **[Quick start](#quick-start) · [How it works](#how-it-works) · [What you can detect](#what-you-can-detect) · [Research questions](#research-questions) · [FAQ](#faq) · [Documentation](#documentation)**
 
-<code>git clone https://github.com/maleksk/indeception && cd indeception</code>
+<code>git clone https://github.com/msakhraoui/hasp && cd hasp</code>
 
 </div>
 
@@ -26,7 +26,7 @@
 
 <br />
 
-<table aria-label="InDeception pillars">
+<table aria-label="hasp pillars">
 <tr>
 <td align="center" width="33%">
   <strong>Honeypot as a sensor</strong><br />
@@ -210,7 +210,7 @@ The prompt injection surface is deliberate. If an attacker can manipulate the sc
 <details>
 <summary><strong>Why not just use fail2ban?</strong></summary>
 
-fail2ban blocks on simple counters like N failed logins. It is easy to evade with slow, spread out, or novel behavior. InDeception tests whether scoring the full session with a local LLM does better, and at what false block cost.
+fail2ban blocks on simple counters like N failed logins. It is easy to evade with slow, spread out, or novel behavior. hasp tests whether scoring the full session with a local LLM does better, and at what false block cost.
 
 </details>
 
@@ -252,7 +252,7 @@ No. This is a research prototype. Run it only in an isolated lab you own. Blocki
 <details>
 <summary><strong>What should I do if I hit a bug?</strong></summary>
 
-Pull the latest code and rebuild first. If the problem persists, [open an issue](https://github.com/maleksk/indeception/issues) with your OS, Go version, Ollama version, model tag, steps to reproduce, and error output.
+Pull the latest code and rebuild first. If the problem persists, [open an issue](https://github.com/msakhraoui/hasp/issues) with your OS, Go version, Ollama version, model tag, steps to reproduce, and error output.
 
 </details>
 
@@ -274,7 +274,7 @@ Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
 ## Contributing
 
-Feedback and threat model reviews are welcome. [Open an issue](https://github.com/maleksk/indeception/issues) to report a bug or suggest a feature, or [send a pull request](https://github.com/maleksk/indeception/pulls) to improve the code or docs.
+Feedback and threat model reviews are welcome. [Open an issue](https://github.com/msakhraoui/hasp/issues) to report a bug or suggest a feature, or [send a pull request](https://github.com/msakhraoui/hasp/pulls) to improve the code or docs.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and checks.
 
@@ -282,10 +282,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and checks.
 
 [GPL-3.0](LICENSE)
 
-InDeception authored code is licensed under GPL-3.0. Third party tools (Cowrie, Snort 3, Ollama) retain their own licenses. You must legally obtain and be authorized to use any commercial analysis tools under their applicable licenses.
+hasp authored code is licensed under GPL-3.0. Third party tools (Cowrie, Snort 3, Ollama) retain their own licenses. You must legally obtain and be authorized to use any commercial analysis tools under their applicable licenses.
 
 ## Contact
 
-Malek SK · malekskwork@gmail.com · feedback and threat model reviews welcome via GitHub Discussions.
+msakhraoui · malekskwork@gmail.com · feedback and threat model reviews welcome via GitHub Discussions.
 
 If you used InDeception on something interesting, an issue or pull request with the target, your question, and what you found is always welcome.
