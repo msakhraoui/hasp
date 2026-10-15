@@ -276,9 +276,6 @@ Report vulnerabilities through [SECURITY.md](SECURITY.md).
 ## Contributing
 
 Feedback and threat model reviews are welcome. [Open an issue](https://github.com/msakhraoui/hasp/issues) to report a bug or suggest a feature, or [send a pull request](https://github.com/msakhraoui/hasp/pulls) to improve the code or docs.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and checks.
-
 ## License
 
 [GPL-3.0](LICENSE)
@@ -287,6 +284,6 @@ hasp authored code is licensed under GPL-3.0. Third party tools (Cowrie, Snort 3
 
 ## Contact
 
-msakhraoui · malekskwork@gmail.com · feedback and threat model reviews welcome via GitHub Discussions.
+msakhraoui · feedback and threat model reviews welcome via GitHub Discussions.
 
 If you used InDeception on something interesting, an issue or pull request with the target, your question, and what you found is always welcome.

@@ -266,8 +266,6 @@ Signalez les vulnérabilités via [SECURITY.md](SECURITY.md).
 
 Les retours et revues de modèle de menace sont les bienvenus. [Ouvrez une issue](https://github.com/msakhraoui/hasp/issues) pour signaler un bug ou suggérer une fonctionnalité, ou [envoyez une pull request](https://github.com/msakhraoui/hasp/pulls) pour améliorer le code ou les docs.
 
-Voir [CONTRIBUTING.md](CONTRIBUTING.md) pour le setup de développement et les checks.
-
 ## Licence
 
 [GPL-3.0](LICENSE)
@@ -276,6 +274,6 @@ Le code écrit par HASP est sous GPL-3.0. Les outils tiers (Cowrie, Snort 3, Oll
 
 ## Contact
 
-msakhraoui · malekskwork@gmail.com · retours et revues de modèle de menace bienvenus via GitHub Discussions.
+msakhraoui · retours et revues de modèle de menace bienvenus via GitHub Discussions.
 
 Si vous avez utilisé HASP sur quelque chose d'intéressant, une issue ou pull request avec la cible, votre question, et ce que vous avez trouvé est toujours bienvenue.
