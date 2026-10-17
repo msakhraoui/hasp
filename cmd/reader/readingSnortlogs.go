@@ -8,8 +8,17 @@ import (
 	"time"
 )
 
-func readingSnortlogs() {
+func main() {
 	type Snortdata struct {
+		Timestamp string `json:"timestamp"`
+		Src_addr  string `json:"src_addr"`
+		Src_port  string `json:"src_port"`
+		Dst_addr  string `json:"dst_addr"`
+		Dst_port  string `json:"dst_port"`
+		Rule      string `json:"rule"`
+		Sid       string `json:"sid"`
+		Action    string `json:"action"`
+		Msg       string `json:"msg"`
 	}
 
 	snortLog, err := os.Open("/var/log/snort/alert-fast.json")
@@ -17,8 +26,12 @@ func readingSnortlogs() {
 		fmt.Println(err)
 		return
 	}
+	defer func() {
+		if err := snortLog.Close(); err != nil {
+			fmt.Println("error closing file", err)
+		}
+	}()
 
-	defer snortLog.Close()
 	reader := bufio.NewReader(snortLog)
 	var snortdata Snortdata
 
@@ -28,7 +41,7 @@ func readingSnortlogs() {
 		if err != nil {
 			time.Sleep(500 * time.Millisecond)
 		}
-		if parsegoterr == nil { //parsing went good
+		if parsegoterr == nil { // parsing went good
 			fmt.Println(snortdata)
 		}
 	}

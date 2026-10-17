@@ -23,12 +23,10 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	defer func ()  {
-
+	defer func() {
 		if err := cowrieLog.Close(); err != nil {
-			fmt.Println("error closing file",err)
+			fmt.Println("error closing file", err)
 		}
-		
 	}()
 	reader := bufio.NewReader(cowrieLog)
 	var cowrieLogs CowrieLogs
