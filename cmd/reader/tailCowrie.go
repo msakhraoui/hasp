@@ -18,7 +18,7 @@ type CowrieLogs struct {
 }
 
 func tailCowrie() {
-	cowrieLog, err := os.Open("/var/log/cowrie.logs")
+	cowrieLog, err := os.Open("/home/cowrie/cowrie/var/log/cowrie/cowrie.json")
 	if err != nil {
 		fmt.Println(err)
 		return
