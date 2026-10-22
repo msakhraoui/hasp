@@ -17,7 +17,7 @@ type CowrieLogs struct {
 	Timestamp string `json:"timestamp"`
 }
 
-func main() {
+func tailCowrie() {
 	cowrieLog, err := os.Open("/var/log/cowrie.logs")
 	if err != nil {
 		fmt.Println(err)
