@@ -10,6 +10,7 @@
 [![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-a42e2b?style=flat-square)](LICENSE)
 [![Status](https://img.shields.io/badge/status-research_prototype-f4c430?style=flat-square)](#current-status)
+[![Version](https://img.shields.io/badge/version-v0.1.0-blue?style=flat-square)](#current-status)
 [![Honeypot](https://img.shields.io/badge/honeypot-Cowrie-cb3837?style=flat-square)](https://github.com/cowrie/cowrie)
 [![NIDS](https://img.shields.io/badge/NIDS-Snort_3-1997f7?style=flat-square)](https://www.snort.org/)
 [![Local LLM](https://img.shields.io/badge/local_LLM-Ollama-22c55e?style=flat-square)](https://ollama.com/)
@@ -159,26 +160,29 @@ The prompt injection surface is deliberate. If an attacker can manipulate the sc
 | AI analysis | Ollama (local LLM inference) |
 | Database | TimescaleDB (PostgreSQL extension) |
 | Dashboard | HTML, CSS, JavaScript + WebSocket (optional) |
-| Infrastructure | Ubuntu Server 24.04 VM, iptables, nftables, ipset |
+| Infrastructure | Ubuntu Server 26.04 VM, iptables, nftables, ipset |
 | Signing | Ed25519 (Go stdlib `crypto/ed25519`) |
 
 ## Current status
 
-### Implemented
+### Implemented (v0.1)
 
-- Cowrie SSH honeypot: fake terminal capturing commands, credential attempts (hashed), file uploads
+- Cowrie SSH honeypot: running as systemd service on the VM, accepts SSH on port 22, captures commands, credential attempts, file uploads
 - Snort 3 NIDS: JSON alerts for SYN, NULL, Xmas, FIN scans and SSH brute force
-- Go log readers (`cmd/reader/`): tail based ingestion, JSON unmarshaling, event normalization
+- Go log readers (`cmd/reader/`): tail Cowrie and Snort JSON logs, parse, print events to stdout (verified end-to-end on the VM with nmap and SSH test traffic)
 
 ### In progress
 
-- Ed25519 signing at reader level + verification CLI
-- Orchestrator: session aggregation, LLM dispatch (structured JSON output)
-- Policy engine: thresholds, allowlist, confidence validation
-- Firewall enforcer: nftables or ipset with TTL
+- Reader refactor: normalized Event struct with Source, Type, SrcIP, Timestamp, Payload fields, emitted to a Go channel instead of stdout
+- Snort rule refinement: detection_filter on the SYN flood rule to stop duplicate alerts during a single nmap scan
 
 ### Planned
 
+- Ed25519 signing at reader level + verification CLI
+- Orchestrator: session aggregation by source IP
+- LLM dispatch via Ollama HTTP API (structured JSON output)
+- Policy engine: thresholds, allowlist, confidence validation
+- Firewall enforcer: nftables or ipset with TTL
 - Evaluation harness: attack and benign scenarios, metrics runner, model comparison
 - TimescaleDB hypertables for signed events and actions
 - Optional WebSocket SOC dashboard
@@ -193,7 +197,7 @@ The prompt injection surface is deliberate. If an attacker can manipulate the sc
 ## Security design
 
 - **Integrity:** Ed25519 signature per event at ingestion. Tamper evident, not tamper proof. The signer lives on the same host.
-- **Confidentiality:** local inference only. No telemetry leaves the host. Credentials hashed before storage.
+- **Confidentiality:** local inference only. No telemetry leaves the host. Attacker credential attempts are logged in the Cowrie JSON log in cleartext, like all attacker input, for analysis. Consider redacting or hashing in display layers downstream.
 - **Determinism:** LLM output is advisory. Blocks require threshold + minimum confidence + allowlist pass. Every action is logged with its full inputs.
 - **Containment:** security stack confined to the Ubuntu VM. LLM endpoint restricted to the internal network.
 - **Collateral:** IP blocks affect everyone behind a shared address (NAT). Allowlist and short TTLs limit the impact.
@@ -211,7 +215,7 @@ The prompt injection surface is deliberate. If an attacker can manipulate the sc
 <details>
 <summary><strong>Why not just use fail2ban?</strong></summary>
 
-fail2ban blocks on simple counters like N failed logins. It is easy to evade with slow, spread out, or novel behavior. hasp tests whether scoring the full session with a local LLM does better, and at what false block cost.
+fail2ban blocks on simple counters like N failed logins. It is easy to evade with slow, spread out, or novel behavior. HASP tests whether scoring the full session with a local LLM does better, and at what false block cost.
 
 </details>
 
@@ -280,10 +284,10 @@ Feedback and threat model reviews are welcome. [Open an issue](https://github.co
 
 [GPL-3.0](LICENSE)
 
-hasp authored code is licensed under GPL-3.0. Third party tools (Cowrie, Snort 3, Ollama) retain their own licenses. You must legally obtain and be authorized to use any commercial analysis tools under their applicable licenses.
+HASP-authored code is licensed under GPL-3.0. Third party tools (Cowrie, Snort 3, Ollama) retain their own licenses. You must legally obtain and be authorized to use any commercial analysis tools under their applicable licenses.
 
 ## Contact
 
 msakhraoui · feedback and threat model reviews welcome via GitHub Discussions.
 
-If you used InDeception on something interesting, an issue or pull request with the target, your question, and what you found is always welcome.
+If you used HASP on something interesting, an issue or pull request with the target, your question, and what you found is always welcome.
