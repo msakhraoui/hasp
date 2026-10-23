@@ -1,6 +1,6 @@
 <div align="center">
 
-[English](../../README.md) · **Français**
+ **[English](../README.md)** · Français
 
 # HASP : Honeypot Adaptive Scoring Policy
 
@@ -11,11 +11,12 @@
 [![Go](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-a42e2b?style=flat-square)](LICENSE)
 [![Status](https://img.shields.io/badge/status-research_prototype-f4c430?style=flat-square)](#etat-davancement)
+[![Version](https://img.shields.io/badge/version-v0.1.0-blue?style=flat-square)](#etat-davancement)
 [![Honeypot](https://img.shields.io/badge/honeypot-Cowrie-cb3837?style=flat-square)](https://github.com/cowrie/cowrie)
 [![NIDS](https://img.shields.io/badge/NIDS-Snort_3-1997f7?style=flat-square)](https://www.snort.org/)
 [![Local LLM](https://img.shields.io/badge/local_LLM-Ollama-22c55e?style=flat-square)](https://ollama.com/)
 
-[Démarrage rapide](#Démarrage-rapide) · [Comment ça marche](#Comment-ça-marche) · [Ce que vous pouvez détecter](#ce-que-vous-pouvez-detecter) · [Questions de recherche](#questions-de-recherche) · [FAQ](#faq) · [Documentation](#documentation)
+**[Démarrage rapide](#demarrage-rapide) · [Comment ça marche](#comment-ca-marche) · [Ce que vous pouvez détecter](#ce-que-vous-pouvez-detecter) · [Questions de recherche](#questions-de-recherche) · [FAQ](#faq) · [Documentation](#documentation)**
 
 <code>git clone https://github.com/msakhraoui/hasp && cd hasp</code>
 
@@ -103,8 +104,20 @@ Hôte Fedora : simulation d'attaque + endpoint d'inférence LLM (réseau interne
 
 ## Ce que vous pouvez détecter
 
-Force brute SSH | Scans de ports (SYN, NULL, Xmas, FIN) | Credential stuffing | Abus de commandes post-auth | Tentatives de reverse shell | Téléchargement et staging de fichiers | Élévation de privilèges | Exfiltration de données | Injection de prompt en session | Force brute lente ou distribuée | Sessions d'opérateur manuel | Travail admin bénin (calibration) |
 
+
+Force brute SSH |
+Scans de ports (SYN, NULL, Xmas, FIN) |
+Credential stuffing |
+Abus de commandes post-auth |
+Tentatives de reverse shell |
+Téléchargement et staging de fichiers |
+Élévation de privilèges |
+Exfiltration de données |
+Injection de prompt en session |
+Force brute lente ou distribuée |
+Sessions d'opérateur manuel |
+Travail admin bénin (calibration) |
 ## Questions de recherche
 
 1. Un petit LLM local peut-il scorer le risque d'une session SSH assez bien pour déclencher des blocages automatiques, et à quel taux de faux blocage sur des sessions bénignes simulées ?
@@ -136,7 +149,7 @@ La surface d'injection de prompt est délibérée. Si un attaquant peut manipule
 
 | Modèle | Précision de blocage | Taux de faux blocage | Taux de miss | Temps de blocage P95 |
 | --- | --- | --- | --- | --- |
-| | | | | |
+| (à remplir) | | | | |
 
 ## Pile technique
 
@@ -153,21 +166,24 @@ La surface d'injection de prompt est délibérée. Si un attaquant peut manipule
 
 ## État d'avancement
 
-### Implémenté
+### Implémenté (v0.1)
 
-- Honeypot SSH Cowrie : faux terminal capturant les commandes, tentatives d'identifiants (hashés), uploads de fichiers
+- Honeypot SSH Cowrie : exécuté comme service systemd sur la VM, accepte SSH sur le port 22, capture les commandes, tentatives d'identifiants, uploads de fichiers
 - NIDS Snort 3 : alertes JSON pour scans SYN, NULL, Xmas, FIN et force brute SSH
-- Lecteurs de logs Go (`cmd/reader/`) : ingestion par tail, unmarshaling JSON, normalisation des événements
+- Lecteurs de logs Go (`cmd/reader/`) : tail des logs JSON Cowrie et Snort, parse, affiche les événements en stdout (vérifié de bout en bout sur la VM avec trafic de test nmap et SSH)
 
 ### En cours
 
-- Signature Ed25519 au niveau reader + CLI de vérification
-- Orchestrateur : agrégation de sessions, dispatch LLM (sortie JSON structurée)
-- Moteur de politique : seuils, allowlist, validation de confiance
-- Exécuteur pare-feu : nftables ou ipset avec TTL
+- Refactor du reader : struct Event normalisée avec Source, Type, SrcIP, Timestamp, Payload, émise sur un channel Go au lieu de stdout
+- Affinement des règles Snort : detection_filter sur la règle SYN flood pour arrêter les alertes dupliquées pendant un seul scan nmap
 
 ### Prévu
 
+- Signature Ed25519 au niveau reader + CLI de vérification
+- Orchestrateur : agrégation de sessions par IP source
+- Dispatch LLM via l'API HTTP Ollama (sortie JSON structurée)
+- Moteur de politique : seuils, allowlist, validation de confiance
+- Exécuteur pare-feu : nftables ou ipset avec TTL
 - Harness d'évaluation : scénarios d'attaque et bénins, runner de métriques, comparaison de modèles
 - Hypertables TimescaleDB pour les événements et actions signés
 - Dashboard SOC WebSocket optionnel
@@ -182,7 +198,7 @@ La surface d'injection de prompt est délibérée. Si un attaquant peut manipule
 ## Conception de sécurité
 
 - **Intégrité :** signature Ed25519 par événement à l'ingestion. Preuve de falsification, pas protection contre falsification. Le signataire vit sur le même hôte.
-- **Confidentialité :** inférence locale uniquement. Aucune télémétrie ne quitte l'hôte. Identifiants hashés avant stockage.
+- **Confidentialité :** inférence locale uniquement. Aucune télémétrie ne quitte l'hôte. Les tentatives d'identifiants de l'attaquant sont loggées dans le log JSON Cowrie en clair, comme toutes les entrées de l'attaquant, pour analyse. Envisager de masquer ou hasher dans les couches d'affichage en aval.
 - **Déterminisme :** la sortie du LLM est consultative. Les blocages nécessitent seuil + confiance minimale + passage de l'allowlist. Chaque action est loggée avec ses entrées complètes.
 - **Confinement :** la stack de sécurité est confinée à la VM Ubuntu. L'endpoint LLM est restreint au réseau interne.
 - **Dégâts collatéraux :** les blocages IP affectent tout le monde derrière une adresse partagée (NAT). L'allowlist et les TTL courts limitent l'impact.
@@ -254,18 +270,17 @@ Environnement de laboratoire isolé uniquement. Ne déployez pas sur des réseau
 
 Commencez par le [Démarrage rapide](#demarrage-rapide). Pour les options exactes, prérequis et contrats de résultat :
 
-- [Installation et configuration](docs/installation.md) : prérequis, setup VM, Ollama, Cowrie, Snort.
-- [CLI et évaluation](docs/cli.md) : commandes, épinglage de modèles, runner de métriques, format des résultats.
-- [Architecture](docs/architecture.md) : détails du pipeline, flux de données, schéma.
-- [Modèle de menace](docs/threat-model.md) : modèle d'attaquant complet, surface d'injection de prompt.
-- [Roadmap](docs/roadmap.md) : travail prévu, trackers de capacités.
+- [Installation et configuration](../docs/installation.md) : prérequis, setup VM, Ollama, Cowrie, Snort.
+- [CLI et évaluation](../docs/cli.md) : commandes, épinglage de modèles, runner de métriques, format des résultats.
+- [Architecture](../docs/architecture.md) : détails du pipeline, flux de données, schéma.
+- [Modèle de menace](../docs/threat-model.md) : modèle d'attaquant complet, surface d'injection de prompt.
+- [Roadmap](../docs/roadmap.md) : travail prévu, trackers de capacités.
 
-Signalez les vulnérabilités via [SECURITY.md](SECURITY.md).
+Signalez les vulnérabilités via [SECURITY.md](../SECURITY.md).
 
 ## Contribuer
 
 Les retours et revues de modèle de menace sont les bienvenus. [Ouvrez une issue](https://github.com/msakhraoui/hasp/issues) pour signaler un bug ou suggérer une fonctionnalité, ou [envoyez une pull request](https://github.com/msakhraoui/hasp/pulls) pour améliorer le code ou les docs.
-
 ## Licence
 
 [GPL-3.0](LICENSE)
