@@ -29,8 +29,8 @@ func tailCowrie() {
 		}
 	}()
 	reader := bufio.NewReader(cowrieLog)
-	var cowrieLogs CowrieLogs
 	for {
+		var cowrieLogs CowrieLogs
 		line, no := reader.ReadString('\n')
 		parseErr := json.Unmarshal([]byte(line), &cowrieLogs)
 		if no != nil {

@@ -37,9 +37,9 @@ func tailSnort() {
 	}()
 
 	reader := bufio.NewReader(snortLog)
-	var snortdata Snortdata
 
 	for {
+		var snortdata Snortdata
 		line, err := reader.ReadString('\n')
 		parsegoterr := json.Unmarshal([]byte(line), &snortdata)
 		if err != nil {
